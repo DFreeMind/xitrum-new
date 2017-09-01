@@ -83,7 +83,7 @@ object ContentFilterRouter{
     //通过路由发送X订单
     systemA ! OrderPlaced(Order("4567", "TypeXYZ", orderTypeX))
     systemX ! OrderPlaced(Order("4567", "TypeXYZ", orderTypeX))
-    
+
     actorSystem.terminate()
   }
 }
