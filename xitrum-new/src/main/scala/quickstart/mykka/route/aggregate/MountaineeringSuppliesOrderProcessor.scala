@@ -57,6 +57,7 @@ class MountaineeringSuppliesOrderProcessor(priceQuoteAggregator: ActorRef) exten
       
       dispatchTo(rfq, recipientList)
       
+    //第八步  
     case fulfillment: QuotationFulfillment =>
       println(s"OrderProcessor: received: $fulfillment")
       AggregatorDriver.completedStep()
