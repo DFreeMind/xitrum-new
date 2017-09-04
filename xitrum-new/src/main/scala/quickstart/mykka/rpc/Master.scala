@@ -36,6 +36,8 @@ class Master(val host: String, val port: Int) extends Actor {
         workers += workerInfo
         //Master向Worker发送注册成功的消息
         val url = s"akka.tcp://${Master.MASTER_SYSTEM}@$host:$port/user/${Master.MASTER_NAME}";
+        //Worker，由worker向master发送消息
+        println("the last message actor ref：" + sender)
         sender ! RegisteredWorker(url)
       }
     }
@@ -75,7 +77,7 @@ object Master {
     val port = 9487
     val confStr =
       s"""
-      |akka.actor.provider = "akka.remote. "
+      |akka.actor.provider = "akka.remote.RemoteActorRefProvider"
       |akka.remote.netty.tcp.hostname = "$host"
       |akka.remote.netty.tcp.port = "$port"
     """.stripMargin
@@ -84,6 +86,6 @@ object Master {
     val actorSystem = ActorSystem(MASTER_SYSTEM, conf)
     //通过ActorSystem创建Actor
     actorSystem.actorOf(Props(new Master(host, port)), MASTER_NAME)
-    actorSystem.terminate()
+//    actorSystem.terminate()
   }
 }

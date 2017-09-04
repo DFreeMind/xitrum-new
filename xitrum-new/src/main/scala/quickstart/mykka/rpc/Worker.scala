@@ -68,6 +68,6 @@ object Worker {
     val actorSystem = ActorSystem("WorkerActorSystem", conf)
     //通过actorSystem来创建Actor
     val worker = actorSystem.actorOf(Props(new Worker(cores, memory, masterHost, masterPort)), "Worker")
-    actorSystem.terminate()
+//    actorSystem.terminate()
   } 
 }

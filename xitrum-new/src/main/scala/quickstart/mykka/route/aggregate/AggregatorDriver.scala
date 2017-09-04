@@ -1,33 +1,44 @@
-package quickstart.mykka.route.receivelist
+package quickstart.mykka.route.aggregate
 
 import akka.actor.Props
 import quickstart.mykka.util.CompletableApp
 import akka.actor.ActorRef
+import quickstart.mykka.route.receivelist.BudgetHikersPriceQuotes
 
-//通过提供价格范围获取具体商品报价的请求
+
 case class RequestForQuotation(rfqId: String, retailItems: Seq[RetailItem]) {
   val totalRetailPrice: Double = retailItems.map(retailItem => retailItem.retailPrice).sum
 }
-//零售条目
 case class RetailItem(itemId: String, retailPrice: Double)
-//感兴趣的价格范围
-case class PriceQuoteInterest(path: String, quoteProcessor: ActorRef, lowTotalRetail: Double, highTotalRetail: Double)
-//请求价格报价（零售价格、订单总的零售价格）
+case class PriceQuoteInterest(quoterId: String, quoteProcessor: ActorRef, 
+    lowTotalRetail: Double, highTotalRetail: Double)
+
+//请求价格报价
 case class RequestPriceQuote(rfqId: String, itemId: String, retailPrice: Double, orderTotalRetailPrice: Double)
-//价格报价（零售价格、折扣之后价格）
-case class PriceQuote(rfqId: String, itemId: String, retailPrice: Double, discountPrice: Double)
+case class PriceQuote(quoterId: String, rfqId: String, itemId: String, retailPrice: Double, discountPrice: Double)
 
-object RecipientListDriver extends CompletableApp(5) {
-  val orderProcessor = system.actorOf(Props[MountaineeringSuppliesOrderProcessor], "orderProcessor")
+//用于消息聚合的消息类型
+case class PriceQuoteFulfilled(priceQuote: PriceQuote)
+//表示商品报价处理过程以及获取的商品报价
+case class RequiredPriceQuotesForFulfillment(rfqId: String, quotesRequested: Int)
+//ActorRef 为报价单组合器Actor，
+case class QuotationFulfillment(rfqId: String, quotesRequested: Int, priceQuotes: Seq[PriceQuote], requester: ActorRef)
 
-  //创建不同供货商的报价引擎
+object AggregatorDriver extends CompletableApp(5) {
+  //消息聚合器
+  val priceQuoteAggregator = system.actorOf(Props[PriceQuoteAggregator], "priceQuoteAggregator")
+  //订单分发器
+  val orderProcessor = system.actorOf(Props(classOf[MountaineeringSuppliesOrderProcessor], priceQuoteAggregator), "orderProcessor")
+
   system.actorOf(Props(classOf[BudgetHikersPriceQuotes], orderProcessor), "budgetHikers")
   system.actorOf(Props(classOf[HighSierraPriceQuotes], orderProcessor), "highSierra")
   system.actorOf(Props(classOf[MountainAscentPriceQuotes], orderProcessor), "mountainAscent")
   system.actorOf(Props(classOf[PinnacleGearPriceQuotes], orderProcessor), "pinnacleGear")
   system.actorOf(Props(classOf[RockBottomOuterwearPriceQuotes], orderProcessor), "rockBottomOuterwear")
-
-  //请求报价
+  
+  /**
+   * 第二步：向订单分器orderProcessor发去发送数据，请求报价单
+   */
   orderProcessor ! RequestForQuotation("123",
       Vector(RetailItem("1", 29.95),
              RetailItem("2", 99.95),
@@ -56,11 +67,7 @@ object RecipientListDriver extends CompletableApp(5) {
              RetailItem("17", 599.99),
              RetailItem("18", 249.95),
              RetailItem("19", 789.99)))
+
+  awaitCompletion
+  println("Aggregator: is completed.")
 }
-
-
-
-
-
-
-
