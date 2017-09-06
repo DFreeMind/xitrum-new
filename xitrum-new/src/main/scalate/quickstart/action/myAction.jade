@@ -1,0 +1,12 @@
+- import mypackage.MyAction
+!!! 5
+html
+head
+!= antiCsrfMeta
+!= xitrumCss
+!= jsDefaults
+title Welcome to Xitrum
+body
+a(href={url}) Path to the current action
+p= currentAction.asInstanceOf[MyAction].hello("World")
+!= jsForView

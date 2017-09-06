@@ -2,8 +2,9 @@ organization := "tv.cntt"
 name         := "xitrum-new"
 version      := "1.0-SNAPSHOT"
 
-scalaVersion := "2.11.6"
+scalaVersion := "2.11.0"
 scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked")
+transitiveClassifiers := Seq("sources", "javadoc")
 
 // Xitrum requires Java 8
 javacOptions ++= Seq("-source", "1.8", "-target", "1.8")

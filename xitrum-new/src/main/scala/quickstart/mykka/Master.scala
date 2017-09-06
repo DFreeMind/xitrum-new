@@ -23,12 +23,18 @@ class Master extends Actor{
     case "connect" => {
       println("a client conneting")
       println("connected")
+      println("connect sender:" + sender)
       sender ! "successed"
     }
     
+    case "successed" => {
+      println("Master successed!")
+      println("Master sender:" + sender)
+    }
     case _ => {
       println("hehe you are a bad boy!")
     }
+    
   }
 }
 
